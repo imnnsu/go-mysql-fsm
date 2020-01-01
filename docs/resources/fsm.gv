@@ -1,0 +1,17 @@
+digraph fsm {
+	rankdir=LR;
+	node [shape = doublecircle]; Deleted;
+	node [shape = circle];
+	Initialzing -> Initialzing [ label = "NotReady" ];
+	Initialzing -> Running [ label = "Ready" ];
+	Initialzing -> Stopped [ label = "Stop" ];
+	Running -> Error [ label = "NotReady" ];
+	Running -> Running [ label = "Ready" ];
+	Running -> Stopped [ label = "Stop" ];
+	Error -> Error [ label = "NotReady" ];
+	Error -> Running [ label = "Ready" ];
+	Error -> Stopped [ label = "Stop" ];
+	Stopped -> Stopped [ label = "Stop" ];
+	Stopped -> Deleted [ label = "Delete" ];
+	Deleted -> Deleted [ label = "Delete" ];
+}
