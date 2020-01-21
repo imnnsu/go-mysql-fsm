@@ -49,7 +49,7 @@ type DataSourceConfig struct {
 	Debug bool
 }
 
-// FSM defines a horizontally scalable finate state machine.
+// FSM defines a horizontally scalable finite state machine.
 type FSM struct {
 	db     *sql.DB
 	table  string
