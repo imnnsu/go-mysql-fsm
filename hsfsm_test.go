@@ -23,7 +23,7 @@ func Test_eventQuery(t *testing.T) {
 					field: "state",
 					init:  "Initializing",
 					events: map[string]Event{
-						"Ready": Event{
+						"Ready": {
 							Name: "Ready",
 							Src:  []string{"Initializing", "Error"},
 							Dst:  "Running",
