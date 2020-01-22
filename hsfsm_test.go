@@ -2,8 +2,6 @@ package hsfsm
 
 import (
 	"testing"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 func Test_eventQuery(t *testing.T) {
