@@ -14,6 +14,7 @@ import (
 	"log"
 	"strings"
 
+	// Registering mysql as the sql driver.
 	_ "github.com/go-sql-driver/mysql"
 )
 
