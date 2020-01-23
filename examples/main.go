@@ -17,7 +17,7 @@ func main() {
 
 	fsm, _ := hsfsm.NewFSM(
 		&hsfsm.DataSourceConfig{
-			URI:   "user:password@tcp(127.0.0.1:3306)/fsm",
+			URI:   "root@tcp(127.0.0.1:3306)/fsm",
 			Table: "task",
 			ID:    "2",
 			Field: "state",
