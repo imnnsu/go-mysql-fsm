@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/go-ini/ini"
 	"github.com/minsunchina/hsfsm"
 )
 
@@ -15,19 +17,45 @@ func main() {
 		{Name: "Delete", Src: []string{"Stopped"}, Dst: "Deleted"},
 	}
 
-	fsm, _ := hsfsm.NewFSM(
+	conf, err := ini.LoadSources(ini.LoadOptions{AllowBooleanKeys: true}, os.Getenv("HOME")+"/.my.cnf")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	var uri string
+	for _, s := range conf.Sections() {
+		fmt.Println("section", s.Name())
+		if s.Key("user").String() == "root" {
+			uri = fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/fsm", s.Key("password"))
+		}
+	}
+
+	fsm, err := hsfsm.NewFSM(
 		&hsfsm.DataSourceConfig{
-			URI:   "root@tcp(127.0.0.1:3306)/fsm",
+			URI:   uri,
 			Table: "task",
 			ID:    "2",
 			Field: "state",
 		},
 		"Initializing", events,
 	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	state, _ := fsm.Current()
+	state, err := fsm.Current()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Println(state)
 	fsm.Event("Ready")
-	state, _ = fsm.Current()
+	state, err = fsm.Current()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	fmt.Println(state)
 }
