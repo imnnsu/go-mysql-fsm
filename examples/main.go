@@ -25,9 +25,9 @@ func main() {
 
 	var uri string
 	for _, s := range conf.Sections() {
-		fmt.Println("section", s.Name())
 		if s.Key("user").String() == "root" {
 			uri = fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/fsm", s.Key("password"))
+			break
 		}
 	}
 
@@ -45,12 +45,14 @@ func main() {
 		return
 	}
 
+	fsm.Init()
 	state, err := fsm.Current()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(state)
+
 	fsm.Event("Ready")
 	state, err = fsm.Current()
 	if err != nil {

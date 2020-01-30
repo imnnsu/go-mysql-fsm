@@ -116,6 +116,13 @@ func (fsm *FSM) Current() (string, error) {
 	return state, nil
 }
 
+// Init inserts into the table with the initial state.
+func (fsm *FSM) Init() error {
+
+	_, err := fsm.db.Exec(initQuery(fsm))
+	return err
+}
+
 func eventQuery(fsm *FSM, event string) (query string) {
 
 	insertFormat := "INSERT INTO %s (id, %s) VALUES ('%s', '%s') "
@@ -143,6 +150,16 @@ func currentQuery(fsm *FSM) (query string) {
 	query = fmt.Sprintf(selectFormat, fsm.field, fsm.table, fsm.id)
 	if fsm.debug {
 		log.Println("[currentQuery]", query)
+	}
+	return
+}
+
+func initQuery(fsm *FSM) (query string) {
+
+	insertFormat := "INSERT INTO %s (id, %s) VALUES ('%s', '%s')"
+	query = fmt.Sprintf(insertFormat, fsm.table, fsm.field, fsm.id, fsm.init)
+	if fsm.debug {
+		log.Println("[eventQuery]", query)
 	}
 	return
 }

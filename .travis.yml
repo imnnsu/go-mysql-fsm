@@ -8,6 +8,7 @@ services:
 
 before_install:
   - mysql -e 'CREATE DATABASE fsm;'
+  - mysql -e 'CREATE TABLE fsm.task (id VARCHAR(64) NOT NULL, state VARCHAR(64) NOT NULL DEFAULT "", PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
     
 script: 
   - make test
