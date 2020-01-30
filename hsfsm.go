@@ -159,7 +159,7 @@ func initQuery(fsm *FSM) (query string) {
 	insertFormat := "INSERT INTO %s (id, %s) VALUES ('%s', '%s')"
 	query = fmt.Sprintf(insertFormat, fsm.table, fsm.field, fsm.id, fsm.init)
 	if fsm.debug {
-		log.Println("[eventQuery]", query)
+		log.Println("[initQuery]", query)
 	}
 	return
 }
