@@ -7,11 +7,17 @@ services:
   - mysql
 
 before_install:
-  - mysql -e 'CREATE DATABASE fsm;'
-  - mysql -e 'CREATE TABLE fsm.task (id VARCHAR(64) NOT NULL, state VARCHAR(64) NOT NULL DEFAULT "", PRIMARY KEY(id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;'
   - go get github.com/mattn/goveralls
 
-script: 
-  - make test
-  - make example
-  - $GOPATH/bin/goveralls -service=travis-ci
+jobs:
+  include:
+    - stage: test
+      script: make test
+
+    - stage: example
+      script:
+        - mysql -uroot < mysql/task.ddl
+        - make example
+
+    - stage: cover
+      script: $GOPATH/bin/goveralls -service=travis-ci

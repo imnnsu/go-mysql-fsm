@@ -1,0 +1,9 @@
+# Stop
+UPDATE task SET state =
+    CASE
+        WHEN state = 'Initialzing' THEN 'Stopped'
+        WHEN state = 'Running' THEN 'Stopped'
+        WHEN state = 'Error' THEN 'Stopped'
+        ELSE state
+    END
+WHERE id = '1';

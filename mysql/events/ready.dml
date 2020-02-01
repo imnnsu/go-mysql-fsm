@@ -1,0 +1,8 @@
+# Ready
+UPDATE task SET state =
+    CASE
+        WHEN state = 'Initialzing' THEN 'Running'
+        WHEN state = 'Error' THEN 'Running'
+        ELSE state
+    END
+WHERE id = '1';

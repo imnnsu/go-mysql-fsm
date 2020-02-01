@@ -1,0 +1,1 @@
+INSERT INTO task (id, state) VALUES ('1', 'Initialzing');

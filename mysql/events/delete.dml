@@ -1,0 +1,7 @@
+# Delete
+UPDATE task SET state =
+    CASE
+        WHEN state = 'Stopped' THEN 'Deleted'
+        ELSE state
+    END
+WHERE id = '1';

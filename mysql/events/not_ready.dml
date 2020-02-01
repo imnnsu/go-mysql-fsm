@@ -1,0 +1,7 @@
+# NotReady
+UPDATE task SET state =
+    CASE
+        WHEN state = 'Running' THEN 'Error'
+        ELSE state
+    END
+WHERE id = '1';

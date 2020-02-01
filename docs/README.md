@@ -32,60 +32,7 @@ Since MySQL is often used together with back-end servers, an idea occurs to me t
 
 ### Update the States in MySQL
 
-```sql
-
-# MySQL 8.0
-CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON *.* TO 'user'@'localhost' WITH GRANT OPTION;
-FLUSH PRIVILEGES;
-
-CREATE TABLE task (
-    id VARCHAR(64) NOT NULL,
-    state VARCHAR(64) NOT NULL DEFAULT '',
-    PRIMARY KEY(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-INSERT INTO task (id, state) VALUES ('1', 'Initialzing');
-
-# NotReady
-UPDATE task SET state =
-    CASE
-        WHEN state = 'Running' THEN 'Error'
-        ELSE state
-    END
-WHERE id = '1';
-
-# Ready
-UPDATE task SET state =
-    CASE
-        WHEN state = 'Initialzing' THEN 'Running'
-        WHEN state = 'Error' THEN 'Running'
-        ELSE state
-    END
-WHERE id = '1';
-
-# Stop
-UPDATE task SET state =
-    CASE
-        WHEN state = 'Initialzing' THEN 'Stopped'
-        WHEN state = 'Running' THEN 'Stopped'
-        WHEN state = 'Error' THEN 'Stopped'
-        ELSE state
-    END
-WHERE id = '1';
-
-# Delete
-UPDATE task SET state =
-    CASE
-        WHEN state = 'Stopped' THEN 'Deleted'
-        ELSE state
-    END
-WHERE id = '1';
-```
-
-### The Template
-
-We can easily get the MySQL template for updating FSM states:
+From the example provided in the directory `mysql`, we can easily get the MySQL statement template for updating FSM states:
 
 ```sql
 UPDATE {table} SET {field}
