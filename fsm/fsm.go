@@ -86,6 +86,25 @@ func NewFSM(dataSourceConfig *DataSourceConfig, init string, events []Event) (
 	}, nil
 }
 
+// Init inserts into the table with the initial state.
+func (fsm *FSM) Init() error {
+
+	_, err := fsm.db.Exec(initQuery(fsm))
+	return err
+}
+
+// Current returns the current state of the state machine.
+func (fsm *FSM) Current() (string, error) {
+
+	var state string
+	err := fsm.db.QueryRow(currentQuery(fsm)).Scan(&state)
+	if err != nil {
+		return "", err
+	}
+
+	return state, nil
+}
+
 // Event updates the state machine according to events defined.
 //
 // A new record is inserted into the database if the ID doesn't exist.
@@ -102,25 +121,6 @@ func (fsm *FSM) Event(event string) error {
 	}
 
 	return nil
-}
-
-// Current returns the current state of the state machine.
-func (fsm *FSM) Current() (string, error) {
-
-	var state string
-	err := fsm.db.QueryRow(currentQuery(fsm)).Scan(&state)
-	if err != nil {
-		return "", err
-	}
-
-	return state, nil
-}
-
-// Init inserts into the table with the initial state.
-func (fsm *FSM) Init() error {
-
-	_, err := fsm.db.Exec(initQuery(fsm))
-	return err
 }
 
 // Close closes the database used by fsm.
