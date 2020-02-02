@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/go-ini/ini"
 	"github.com/minsunchina/go-mysql-fsm/fsm"
@@ -21,23 +22,31 @@ func getURI() (string, error) {
 		}
 	}
 
-	return "", errors.New("password for root not found")
+	return "", errors.New("password for root is not found")
 }
 
-func transition(fsm *fsm.FSM, event string) {
-	src, err := fsm.Current()
+func transition(fsm *fsm.FSM, event, routineID string) {
+	state, err := fsm.Current()
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("#%v | %-12v |\n", routineID, state)
 
+	fmt.Printf("#%v |              | -> %v\n", routineID, event)
 	fsm.Event(event)
+	fmt.Printf("#%v |              | <- %v\n", routineID, event)
 
-	tar, err := fsm.Current()
+	state, err = fsm.Current()
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("#%v | %-12v |\n", routineID, state)
+}
 
-	fmt.Printf("%-12v + %-10v -> %-12v\n", src, "["+event+"]", tar)
+func updateStateRoutine(routineID string, f *fsm.FSM, events []string) {
+	for _, event := range events {
+		transition(f, event, routineID)
+	}
 }
 
 func main() {
@@ -68,9 +77,9 @@ func main() {
 	defer f.Close()
 
 	f.Init()
-	transition(f, "Ready")
-	transition(f, "NotReady")
-	transition(f, "Ready")
-	transition(f, "Stop")
-	transition(f, "Delete")
+	go updateStateRoutine("1", f, []string{"Ready"})
+	go updateStateRoutine("2", f, []string{"Ready", "NotReady"})
+	go updateStateRoutine("3", f, []string{"Stop", "Delete"})
+
+	time.Sleep(1 * time.Second)
 }
