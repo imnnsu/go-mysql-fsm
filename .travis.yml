@@ -16,7 +16,7 @@ jobs:
 
     - stage: example
       script:
-        - mysql -uroot < mysql/task.ddl
+        - mysql -uroot < examples/mysql/task.ddl
         - make example
 
     - stage: cover
