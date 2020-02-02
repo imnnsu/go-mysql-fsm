@@ -1,4 +1,4 @@
-module github.com/minsunchina/hsfsm
+module github.com/minsunchina/go-mysql-fsm
 
 go 1.13
 

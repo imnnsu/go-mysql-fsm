@@ -44,6 +44,6 @@ UPDATE {table} SET {field}
 WHERE id = '{id}';
 ```
 
-This is exactly where this package `hsfsm` comes from. By generating MySQL statements from the template for FSM events and executing them, we are able to update the FSM states on the MySQL side, other than the server side, so that we avoid the in-memory problem.
+This is exactly where this package `go-mysql-fsm/fsm` comes from. By generating MySQL statements from the template for FSM events and executing them, we are able to update the FSM states on the MySQL side, other than the server side, so that we avoid the in-memory problem.
 
-This is what implemented in `hsfsm`. A user friendly interface is provided to show the usage of this idea as well.
+This is what implemented in `go-mysql-fsm/fsm`. A user friendly interface is provided to show the usage of this idea as well.

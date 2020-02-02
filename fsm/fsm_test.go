@@ -1,4 +1,4 @@
-package hsfsm
+package fsm
 
 import (
 	"testing"

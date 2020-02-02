@@ -1,11 +1,11 @@
-// Package hsfsm implements a horizontally scalable finite state machine
+// Package fsm implements a horizontally scalable finite state machine
 // utilizing MySQL.
 //
-// Traditional finite state machines manage the states in memory. Package hsfsm
+// Traditional finite state machines manage the states in memory. Package fsm
 // updates and gets the states directly on the MySQL side, so that it avoids
 // the in-memory problem. Thus it is able to be scaled horizontally with no
 // difficulty.
-package hsfsm
+package fsm
 
 import (
 	"database/sql"
@@ -123,6 +123,11 @@ func (fsm *FSM) Init() error {
 	return err
 }
 
+// Close closes the database used by fsm.
+func (fsm *FSM) Close() error {
+	return fsm.db.Close()
+}
+
 func eventQuery(fsm *FSM, event string) (query string) {
 
 	insertFormat := "INSERT INTO %s (id, %s) VALUES ('%s', '%s') "
@@ -157,6 +162,7 @@ func currentQuery(fsm *FSM) (query string) {
 func initQuery(fsm *FSM) (query string) {
 
 	insertFormat := "INSERT INTO %s (id, %s) VALUES ('%s', '%s')"
+
 	query = fmt.Sprintf(insertFormat, fsm.table, fsm.field, fsm.id, fsm.init)
 	if fsm.debug {
 		log.Println("[initQuery]", query)
