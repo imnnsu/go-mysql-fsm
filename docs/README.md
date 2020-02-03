@@ -2,7 +2,7 @@
 
 ## The Problem
 
-Finite state machine (FSM) is a very classical mathematical model of computation, being widely used in many different situations, including the server back-end. It's reasonable to use FSM at the back-end due to its simpliity and readability, which lead to its maintainability.
+Finite state machine (FSM) is a very classical mathematical model of computation, being widely used in many different situations, including the server back-end. It's reasonable to use FSM at the back-end due to its simplicity and readability, which lead to its maintainability.
 
 However, there is one obvious problem. Usually the finite state machine is structurally simple, so the logic is handled in-memory by a single node. This is the very basic problem of a vallina FSM:
 
