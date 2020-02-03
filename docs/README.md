@@ -2,9 +2,9 @@
 
 ## The Problem
 
-Finite state machine (FSM) is a very classical mathematical model of computation, being widely used in many different situations, including the server back-end. It's reasonable to use FSM at the back-end due to its simplicity and readability, which lead to its maintainability.
+The finite state machine (FSM) is a very classical mathematical model of computation, being widely used in many different situations, including the server back-end. It's reasonable to use FSM at the back-end due to its simplicity and readability, which lead to its maintainability.
 
-However, there is one obvious problem. Usually the finite state machine is structurally simple, so the logic is handled in-memory by a single node. This is the very basic problem of a vallina FSM:
+However, there is one obvious problem. Usually the finite state machine is structurally simple, so the logic is handled in-memory by a single node. This is the very basic problem of a vanilla FSM:
 
     FSM, as an in-memory model, requires extra efforts when being horizontally scaled.
   
@@ -12,7 +12,7 @@ Here, horizontal scaling refers to increasing the capacity by adding more server
 
 ## Solutions and the Idea
 
-Obviously, we can address this problem in many ways. We can sperate the "get" and "set" operations of the FSM, and select just one leader from the candidate servers to perform the "set" operations. Or, we can use specific rules to coordinate the servers before any of them setting the FSM states ...
+We can address this problem in many ways. We can separate the "get" and "set" operations of the FSM, and select just one leader from the candidate servers to perform the "set" operations. Or, we can use specific rules to coordinate the servers before any of them setting the FSM states ...
 
 Since MySQL is often used together with back-end servers, an idea occurs to me that we can simply store and update the states in one place, that is the MySQL database. Problem solved.
 
@@ -44,6 +44,6 @@ UPDATE {table} SET {field}
 WHERE id = '{id}';
 ```
 
-This is exactly where this package `go-mysql-fsm/fsm` comes from. By generating MySQL statements from the template for FSM events and executing them, we are able to update the FSM states on the MySQL side, other than the server side, so that we avoid the in-memory problem.
+This is exactly where this package `go-mysql-fsm/fsm` comes from. By generating MySQL statements from the template for FSM events and executing them, we can update the FSM states on the MySQL side, other than the server-side, so that we avoid the in-memory problem.
 
-This is what implemented in `go-mysql-fsm/fsm`. A user friendly interface is provided to show the usage of this idea as well.
+This is what implemented in `go-mysql-fsm/fsm`. A user-friendly interface is provided to show the usage of this idea as well.
