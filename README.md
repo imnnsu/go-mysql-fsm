@@ -23,12 +23,14 @@ mysql> describe fsm.task;
 
 ## Usage
 
-Using [go-sql-driver/mysql](github.com/go-sql-driver/mysql) to setup the database connection.
+Using [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql) to setup the database connection.
 
 ```go
 import (
     "database/sql"
+
     _ "github.com/go-sql-driver/mysql"
+    "github.com/minsunchina/go-mysql-fsm/fsm"
 )
 
 db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/fsm")
@@ -38,13 +40,11 @@ if err != nil {
 defer db.Close()
 ```
 
-> Please see [DSN (Data Source Name)](https://github.com/go-sql-driver/mysql#dsn-data-source-name) for reference of uri.
+> Please see [DSN (Data Source Name)](https://github.com/go-sql-driver/mysql#dsn-data-source-name) for the reference of uri.
 
 Create the Finite State Machine.
 
 ```go
-import "github.com/minsunchina/go-mysql-fsm/fsm"
-
 events := []fsm.Event{
     {Name: "NotReady", Src: []string{"Running"}, Dst: "Error"},
     {Name: "Ready", Src: []string{"Initializing", "Error"}, Dst: "Running"},
@@ -58,14 +58,14 @@ f := fsm.NewFSM(db, "task", "state", "Initializing", events, false)
 Then we can set or get the states of multiple finite state machines with the same transition rule, identified by different ID's.
 
 ```go
-f.Initialize("1")
-f.Initialize("2")
-state, _ := f.Current("1")
-state, _ := f.Current("2")
-f.Event("1", "Ready")
-f.Event("2", "NotReady")
-state, _ = f.Current("1")
-state, _ = f.Current("2")
+f.Initialize("fsm-1")
+f.Initialize("fsm-2")
+state, _ := f.Current("fsm-1")
+state, _ := f.Current("fsm-2")
+f.Event("fsm-1", "Ready")
+f.Event("fsm-2", "NotReady")
+state, _ = f.Current("fsm-1")
+state, _ = f.Current("fsm-2")
 ```
 
 Please check the [example](examples/main.go) that updates the finite state machine in multiple go-routines.
