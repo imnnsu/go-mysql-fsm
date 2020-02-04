@@ -7,7 +7,7 @@
 
 The [finite state machine](https://en.wikipedia.org/wiki/Finite-state_machine) is a very classical model. Usually, a finite state machine is manipulated in-memory, so that it requires extra efforts when horizontally scaling. To solve this problem, `go-mysql-fsm/fsm` is developed, storing and updating the FSM states in MySQL. See [docs](docs/README.md) for more information.
 
-## Setup
+## Setup the Database
 
 A MySQL database and a table should be accessible from the environment. For example, we are using the table described below.
 
@@ -23,28 +23,28 @@ mysql> describe fsm.task;
 
 ## Usage
 
-Import the package.
+Using [go-sql-driver/mysql](github.com/go-sql-driver/mysql) to setup the database connection.
+
+```go
+import (
+    "database/sql"
+    _ "github.com/go-sql-driver/mysql"
+)
+
+db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/fsm")
+if err != nil {
+    panic(err)
+}
+defer db.Close()
+```
+
+> Please see [DSN (Data Source Name)](https://github.com/go-sql-driver/mysql#dsn-data-source-name) for reference of uri.
+
+Create the Finite State Machine.
 
 ```go
 import "github.com/minsunchina/go-mysql-fsm/fsm"
-```
 
-Define the configuration for the MySQL database.
-
-```go
-dataSourceConfig := &fsm.DataSourceConfig{
-    URI:   "user:password@tcp(127.0.0.1:3306)/fsm",
-    Table: "task",
-    ID:    "1",
-    Field: "state",
-}
-```
-
-> Please see [DSN (Data Source Name)](https://github.com/go-sql-driver/mysql#dsn-data-source-name) for reference of `fsm.DataSourceConfig.URI`, .
-
-Define the events and states for the finite state machine.
-
-```go
 events := []fsm.Event{
     {Name: "NotReady", Src: []string{"Running"}, Dst: "Error"},
     {Name: "Ready", Src: []string{"Initializing", "Error"}, Dst: "Running"},
@@ -52,26 +52,20 @@ events := []fsm.Event{
     {Name: "Delete", Src: []string{"Stopped"}, Dst: "Deleted"},
 }
 
-initial := "Initializing"
+f := fsm.NewFSM(db, "task", "state", "Initializing", events, false)
 ```
 
-Create a new finite state machine using MySQL.
+Then we can set or get the states of multiple finite state machines with the same transition rule, identified by different ID's.
 
 ```go
-f, err := fsm.NewFSM(dataSourceConfig, initial, events)
-if err != nil {
-    panic(err)
-}
-defer f.Close()
-```
-
-Then we can set or get the states of the finite state machine.
-
-```go
-f.Init()
-state, _ := f.Current()
-f.Event("Ready")
-state, _ = f.Current()
+f.Initialize("1")
+f.Initialize("2")
+state, _ := f.Current("1")
+state, _ := f.Current("2")
+f.Event("1", "Ready")
+f.Event("2", "NotReady")
+state, _ = f.Current("1")
+state, _ = f.Current("2")
 ```
 
 Please check the [example](examples/main.go) that updates the finite state machine in multiple go-routines.

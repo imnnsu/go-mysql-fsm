@@ -1,12 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/go-ini/ini"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/minsunchina/go-mysql-fsm/fsm"
 )
 
@@ -25,27 +27,27 @@ func getURI() (string, error) {
 	return "", errors.New("password for root is not found")
 }
 
-func transition(fsm *fsm.FSM, event, routineID string) {
-	state, err := fsm.Current()
+func transition(routineID string, fsm *fsm.FSM, entryID, event string) {
+	state, err := fsm.Current(entryID)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("#%v | %-12v |\n", routineID, state)
 
 	fmt.Printf("#%v |              | -> %v\n", routineID, event)
-	fsm.Event(event)
+	fsm.Event(entryID, event)
 	fmt.Printf("#%v |              | <- %v\n", routineID, event)
 
-	state, err = fsm.Current()
+	state, err = fsm.Current(entryID)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("#%v | %-12v |\n", routineID, state)
 }
 
-func updateStateRoutine(routineID string, f *fsm.FSM, events []string) {
+func updateStateRoutine(routineID string, f *fsm.FSM, entryID string, events []string) {
 	for _, event := range events {
-		transition(f, event, routineID)
+		transition(routineID, f, entryID, event)
 	}
 }
 
@@ -56,6 +58,12 @@ func main() {
 		panic(err)
 	}
 
+	db, err := sql.Open("mysql", uri)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
 	events := []fsm.Event{
 		{Name: "NotReady", Src: []string{"Running"}, Dst: "Error"},
 		{Name: "Ready", Src: []string{"Initializing", "Error"}, Dst: "Running"},
@@ -63,23 +71,13 @@ func main() {
 		{Name: "Delete", Src: []string{"Stopped"}, Dst: "Deleted"},
 	}
 
-	f, err := fsm.NewFSM(
-		&fsm.DataSourceConfig{
-			URI:   uri,
-			Table: "task",
-			ID:    "1",
-			Field: "state",
-		}, "Initializing", events,
-	)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
+	f := fsm.NewFSM(db, "task", "state", "Initializing", events, false)
 
-	f.Init()
-	go updateStateRoutine("1", f, []string{"Ready"})
-	go updateStateRoutine("2", f, []string{"Ready", "NotReady"})
-	go updateStateRoutine("3", f, []string{"Stop", "Delete"})
+	entryID := "1"
+	f.Initialize(entryID)
+	go updateStateRoutine("1", f, entryID, []string{"Ready"})
+	go updateStateRoutine("2", f, entryID, []string{"Ready", "NotReady"})
+	go updateStateRoutine("3", f, entryID, []string{"Stop", "Delete"})
 
 	time.Sleep(1 * time.Second)
 }
