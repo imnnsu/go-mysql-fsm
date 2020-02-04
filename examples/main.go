@@ -27,27 +27,27 @@ func getURI() (string, error) {
 	return "", errors.New("password for root is not found")
 }
 
-func transition(routineID string, fsm *fsm.FSM, entryID, event string) {
-	state, err := fsm.Current(entryID)
+func transition(routineID string, fsm *fsm.FSM, event string) {
+	state, err := fsm.Current()
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("#%v | %-12v |\n", routineID, state)
 
 	fmt.Printf("#%v |              | -> %v\n", routineID, event)
-	fsm.Event(entryID, event)
+	fsm.Event(event)
 	fmt.Printf("#%v |              | <- %v\n", routineID, event)
 
-	state, err = fsm.Current(entryID)
+	state, err = fsm.Current()
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("#%v | %-12v |\n", routineID, state)
 }
 
-func updateStateRoutine(routineID string, f *fsm.FSM, entryID string, events []string) {
+func updateStateRoutine(routineID string, f *fsm.FSM, events []string) {
 	for _, event := range events {
-		transition(routineID, f, entryID, event)
+		transition(routineID, f, event)
 	}
 }
 
@@ -71,13 +71,13 @@ func main() {
 		{Name: "Delete", Src: []string{"Stopped"}, Dst: "Deleted"},
 	}
 
-	f := fsm.NewFSM(db, "task", "state", "Initializing", events, false)
+	config := fsm.NewConfig(db, "task", "state", "Initializing", events)
+	f := fsm.NewFSM(config, "1")
 
-	entryID := "1"
-	f.Initialize(entryID)
-	go updateStateRoutine("1", f, entryID, []string{"Ready"})
-	go updateStateRoutine("2", f, entryID, []string{"Ready", "NotReady"})
-	go updateStateRoutine("3", f, entryID, []string{"Stop", "Delete"})
+	f.Initialize()
+	go updateStateRoutine("1", f, []string{"Ready"})
+	go updateStateRoutine("2", f, []string{"Ready", "NotReady"})
+	go updateStateRoutine("3", f, []string{"Stop", "Delete"})
 
 	time.Sleep(1 * time.Second)
 }

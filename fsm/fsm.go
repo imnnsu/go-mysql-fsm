@@ -28,53 +28,77 @@ type Event struct {
 	Dst string
 }
 
-// FSM is a horizontally scalable finite state machine storing states in MySQL.
-type FSM struct {
+// DBConfig is the configuration of the MySQL database.
+type DBConfig struct {
 	// DB represents the connection to the database.
 	DB *sql.DB
 	// Table is the name of the table to be updated.
 	Table string
 	// Field refers to the field in the row to be upated.
 	Field string
+	// Debug deicdes whehter the debugging logs should be shown.
+	Debug bool
+}
+
+// Config is the configuratoin of the finite state machine.
+type Config struct {
+	*DBConfig
 	// Init is the initial state of the finite state machine.
 	Init string
 	// Events is a map from the event name to its transitions.
 	Events map[string]Event
 	// Debug indicates whether debugging logs should be printed or not.
-	Debug bool
 }
 
-// NewFSM returns a new finite state machine with MySQL configurations.
-func NewFSM(db *sql.DB, table, field, init string, events []Event,
-	debug bool) *FSM {
+// FSM is a finite state machine storing states in the MySQL database.
+type FSM struct {
+	*Config
+	// ID is used in the MySQL database as the primary key.
+	ID string
+}
+
+// NewConfig returns a new configuration for the finite state machine and its
+// MySQL configurations.
+func NewConfig(db *sql.DB, table, field, init string, events []Event) *Config {
+
+	dbConfig := &DBConfig{
+		DB:    db,
+		Table: table,
+		Field: field,
+	}
 
 	eventMap := make(map[string]Event)
 	for _, event := range events {
 		eventMap[event.Name] = event
 	}
 
+	return &Config{
+		DBConfig: dbConfig,
+		Init:     init,
+		Events:   eventMap,
+	}
+}
+
+// NewFSM returns a new FSM.
+func NewFSM(config *Config, id string) *FSM {
 	return &FSM{
-		DB:     db,
-		Table:  table,
-		Field:  field,
-		Init:   init,
-		Events: eventMap,
-		Debug:  debug,
+		Config: config,
+		ID:     id,
 	}
 }
 
 // Initialize inserts into the table with the initial state.
-func (fsm *FSM) Initialize(id string) error {
+func (fsm *FSM) Initialize() error {
 
-	_, err := fsm.DB.Exec(initQuery(fsm, id))
+	_, err := fsm.DB.Exec(initQuery(fsm))
 	return err
 }
 
 // Current returns the current state of the state machine.
-func (fsm *FSM) Current(id string) (string, error) {
+func (fsm *FSM) Current() (string, error) {
 
 	var state string
-	err := fsm.DB.QueryRow(currentQuery(fsm, id)).Scan(&state)
+	err := fsm.DB.QueryRow(currentQuery(fsm)).Scan(&state)
 	if err != nil {
 		return "", err
 	}
@@ -86,13 +110,13 @@ func (fsm *FSM) Current(id string) (string, error) {
 //
 // A new record is inserted into the database if the ID doesn't exist.
 // Otherwise the row identified by the ID is updated.
-func (fsm *FSM) Event(id, event string) error {
+func (fsm *FSM) Event(event string) error {
 
 	if _, ok := fsm.Events[event]; !ok {
 		return errors.New("undefined event: " + event)
 	}
 
-	_, err := fsm.DB.Exec(eventQuery(fsm, id, event))
+	_, err := fsm.DB.Exec(eventQuery(fsm, event))
 	if err != nil {
 		return err
 	}
@@ -100,7 +124,7 @@ func (fsm *FSM) Event(id, event string) error {
 	return nil
 }
 
-func eventQuery(fsm *FSM, id, event string) (query string) {
+func eventQuery(fsm *FSM, event string) (query string) {
 
 	insertFormat := "INSERT INTO %s (id, %s) VALUES ('%s', '%s') "
 	updateFormat := "ON DUPLICATE KEY UPDATE %s = CASE %s ELSE %s END"
@@ -111,7 +135,7 @@ func eventQuery(fsm *FSM, id, event string) (query string) {
 	for _, src := range fsm.Events[event].Src {
 		cases = append(cases, fmt.Sprintf(caseFormat, src, dst))
 	}
-	query = fmt.Sprintf(insertFormat, fsm.Table, fsm.Field, id, fsm.Init) +
+	query = fmt.Sprintf(insertFormat, fsm.Table, fsm.Field, fsm.ID, fsm.Init) +
 		fmt.Sprintf(updateFormat, fsm.Field, strings.Join(cases, " "),
 			fsm.Field)
 	if fsm.Debug {
@@ -120,22 +144,22 @@ func eventQuery(fsm *FSM, id, event string) (query string) {
 	return
 }
 
-func currentQuery(fsm *FSM, id string) (query string) {
+func currentQuery(fsm *FSM) (query string) {
 
 	selectFormat := "SELECT %s FROM %s WHERE id = '%s'"
 
-	query = fmt.Sprintf(selectFormat, fsm.Field, fsm.Table, id)
+	query = fmt.Sprintf(selectFormat, fsm.Field, fsm.Table, fsm.ID)
 	if fsm.Debug {
 		log.Println("[currentQuery]", query)
 	}
 	return
 }
 
-func initQuery(fsm *FSM, id string) (query string) {
+func initQuery(fsm *FSM) (query string) {
 
 	insertFormat := "INSERT INTO %s (id, %s) VALUES ('%s', '%s')"
 
-	query = fmt.Sprintf(insertFormat, fsm.Table, fsm.Field, id, fsm.Init)
+	query = fmt.Sprintf(insertFormat, fsm.Table, fsm.Field, fsm.ID, fsm.Init)
 	if fsm.Debug {
 		log.Println("[initQuery]", query)
 	}

@@ -42,7 +42,7 @@ defer db.Close()
 
 > Please see [DSN (Data Source Name)](https://github.com/go-sql-driver/mysql#dsn-data-source-name) for the reference of uri.
 
-Create the Finite State Machine.
+Create the Finite State Machine with an ID.
 
 ```go
 events := []fsm.Event{
@@ -52,20 +52,22 @@ events := []fsm.Event{
     {Name: "Delete", Src: []string{"Stopped"}, Dst: "Deleted"},
 }
 
-f := fsm.NewFSM(db, "task", "state", "Initializing", events, false)
+config := fsm.NewConfig(db, "task", "state", "Initializing", events)
+f1 := fsm.NewFSM(config, "1")
+f2 := fsm.NewFSM(config, "2")
 ```
 
 Then we can set or get the states of multiple finite state machines with the same transition rule, identified by different ID's.
 
 ```go
-f.Initialize("fsm-1")
-f.Initialize("fsm-2")
-state, _ := f.Current("fsm-1")
-state, _ := f.Current("fsm-2")
-f.Event("fsm-1", "Ready")
-f.Event("fsm-2", "NotReady")
-state, _ = f.Current("fsm-1")
-state, _ = f.Current("fsm-2")
+f1.Initialize()
+f2.Initialize()
+state, _ := f1.Current()
+state, _ := f2.Current()
+f1.Event("Ready")
+f2.Event("NotReady")
+state, _ = f1.Current()
+state, _ = f2.Current()
 ```
 
 Please check the [example](examples/main.go) that updates the finite state machine in multiple go-routines.
