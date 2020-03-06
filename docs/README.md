@@ -35,7 +35,7 @@ Since MySQL is often used together with back-end servers, an idea occurs to me t
 From the example provided in the directory `examples/mysql`, we can easily get the MySQL statement template for updating FSM states:
 
 ```sql
-UPDATE {table} SET {field}
+UPDATE {table} SET {field} = 
     CASE
         WHEN {field} = '{src}' THEN '{dst}'
         # ... multiple cases
