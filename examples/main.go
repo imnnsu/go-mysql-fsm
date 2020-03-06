@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-ini/ini"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/minsunchina/go-mysql-fsm/fsm"
+	"github.com/imnnsu/go-mysql-fsm/fsm"
 )
 
 func getURI() (string, error) {

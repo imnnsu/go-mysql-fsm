@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.com/minsunchina/go-mysql-fsm.svg?branch=master)](https://travis-ci.com/minsunchina/go-mysql-fsm)
-[![Coverage Status](https://coveralls.io/repos/github/minsunchina/go-mysql-fsm/badge.svg)](https://coveralls.io/github/minsunchina/go-mysql-fsm)
-[![GoDoc](https://godoc.org/github.com/minsunchina/go-mysql-fsm/fsm?status.svg)](https://godoc.org/github.com/minsunchina/go-mysql-fsm/fsm)
-[![Go Report Card](https://goreportcard.com/badge/github.com/minsunchina/go-mysql-fsm)](https://goreportcard.com/report/github.com/minsunchina/go-mysql-fsm)
+[![Build Status](https://travis-ci.com/imnnsu/go-mysql-fsm.svg?branch=master)](https://travis-ci.com/imnnsu/go-mysql-fsm)
+[![Coverage Status](https://coveralls.io/repos/github/imnnsu/go-mysql-fsm/badge.svg)](https://coveralls.io/github/imnnsu/go-mysql-fsm)
+[![GoDoc](https://godoc.org/github.com/imnnsu/go-mysql-fsm/fsm?status.svg)](https://godoc.org/github.com/imnnsu/go-mysql-fsm/fsm)
+[![Go Report Card](https://goreportcard.com/badge/github.com/imnnsu/go-mysql-fsm)](https://goreportcard.com/report/github.com/imnnsu/go-mysql-fsm)
 
 # Horizontally Scalable FSM storing states in MySQL
 
@@ -30,7 +30,7 @@ import (
     "database/sql"
 
     _ "github.com/go-sql-driver/mysql"
-    "github.com/minsunchina/go-mysql-fsm/fsm"
+    "github.com/imnnsu/go-mysql-fsm/fsm"
 )
 
 db, err := sql.Open("mysql", "user:password@tcp(127.0.0.1:3306)/fsm")
